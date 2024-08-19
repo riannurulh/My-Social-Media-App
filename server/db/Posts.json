@@ -1,0 +1,24 @@
+[
+    {
+      "content": "Contoh content",
+      "tags": [
+        "tag1",
+        "tag2"
+      ],
+      "imgUrl": "https://via.placeholder.com/300",
+      "authorId": {
+        "$oid": "66c31005dbd89c26d9c54a07"
+      },
+      "comments": [
+        {
+          "content": "aku komen",
+          "username": "budi",
+          "createdAt": "date",
+          "updatedAt": "date"
+        }
+      ],
+      "createdAt": "date",
+      "updatedAt": "date"
+    }
+  ]
+  
