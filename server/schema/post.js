@@ -6,14 +6,14 @@ const postTypeDefs = `#graphql
     type Comments {
         content: String
         username: String
-        # createdAt: date
-        # updatedAt: date
+        createdAt: String
+        updatedAt: String
     }
 
     type Likes {
         username: String
-      #  createdAt: date
-      #  updatedAt: date
+        createdAt: String
+        updatedAt: String
     }
 
     type Post {
@@ -24,8 +24,8 @@ const postTypeDefs = `#graphql
         authorId: String
         comments: [Comments]
         likes: [Likes]
-      #  createdAt: date
-      #  updatedAt: date
+        createdAt: String
+        updatedAt: String
     }
 
     type Query {
@@ -38,16 +38,16 @@ const postTypeDefs = `#graphql
         content: String!
         tags: [String]
         imgUrl: String
-        authorId: String!
       #  comments: [Comments]
       #  likes: [Likes]
-      #  createdAt: date
-      #  updatedAt: date
+      #  createdAt: String
+      #  updatedAt: String
     }
 
     type Mutation {
         AddPost(form: PostForm): Post
-        
+        addComment(postId: String!, content: String!): Comments
+        addLike(postId: String!): Likes
     }
 `;
 
@@ -61,17 +61,40 @@ const postResolver = {
     },
   },
   Mutation: {
-    AddPost: async (parent, { form }) => {
+    AddPost: async (parent, { form }, contextValue) => {
+      const user = await contextValue.authentication();
+
       if (!form.content) {
         throw new Error("Content cannot be empty");
       }
 
-      if (!form.authorId) {
-        throw new Error("authorId cannot be empty");
-      }
+      form.authorId = user._id;
 
       const result = await Post.create(form);
       return result;
+    },
+    addComment: async (parent, args, contextValue) => {
+      let { postId, content } = args;
+
+      let user = await contextValue.authentication();
+
+      let username = user.username;
+
+      let post = await Post.addComment(postId, { content, username });
+
+      return post;
+    },
+
+    addLike: async (parent, args, contextValue) => {
+      let { postId } = args;
+
+      let usera = await contextValue.authentication();
+
+      let username = usera.username;
+      
+      let like = await Post.addLike(postId, { username });
+
+      return like;
     },
   },
 };
