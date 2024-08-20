@@ -4,10 +4,11 @@ const { userTypeDefs, userResolver } = require("./schema/user");
 const { postTypeDefs, postResolver } = require("./schema/post");
 const { verifyToken } = require("./helpers/jwt");
 const User = require("./models/user");
+const { followTypeDefs, followResolver } = require("./schema/follow");
 
 const server = new ApolloServer({
-  typeDefs: [userTypeDefs, postTypeDefs],
-  resolvers: [userResolver, postResolver],
+  typeDefs: [userTypeDefs, postTypeDefs, followTypeDefs],
+  resolvers: [userResolver, postResolver, followResolver],
 });
 
 startStandaloneServer(server, {
@@ -16,7 +17,7 @@ startStandaloneServer(server, {
     async function authentication() {
       const authorization = req.headers.authorization || "";
       console.log(authorization);
-      
+
       if (!authorization) {
         throw new Error("Invalid tokena");
       }

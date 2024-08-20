@@ -12,13 +12,13 @@ const userTypeDefs = `#graphql
         name: String
         username: String
         email: String
-        password: String
     }
 
     type Query {
         users: [User]
 
-        userById(id: Int!): User
+        userById(id: String!): User
+        userByUsername(username: String): User
     }
 
     input UserForm {
@@ -46,8 +46,39 @@ const userResolver = {
     users: async () => {
       return await User.findAll();
     },
-    userById: async (parent, args) => {
+    userById: async (parent, args, contextValue) => {
       return await User.findByPk(args.id);
+    },
+    userByUsername: async (parent, args, contextValue) => {
+      const { username } = args;
+      console.log(username, "awikawik");
+
+      const pipeline = [];
+
+      pipeline.push({
+        $match: {
+          $or: [
+            {
+              username: {
+                $regex: username,
+                $options: "i",
+              },
+            },
+            {
+              email: {
+                $regex: username,
+                $options: "i",
+              },
+            },
+          ],
+        },
+      });
+      const result = await db.collection("User").aggregate(pipeline).toArray();
+      
+      delete result[0].password
+      console.log(result);
+
+      return result[0];
     },
   },
   Mutation: {
@@ -59,7 +90,6 @@ const userResolver = {
       const checkUsername = await db
         .collection("User")
         .findOne({ username: form.username });
-
 
       if (checkUsername) {
         throw new Error("Username must be unique");
@@ -96,7 +126,7 @@ const userResolver = {
       form.password = hashSync(form.password);
       const result = await User.create(form);
 
-      delete result.password
+      delete result.password;
 
       return result;
     },

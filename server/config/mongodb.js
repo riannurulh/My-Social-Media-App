@@ -1,7 +1,7 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
-require('dotenv').config()
+require("dotenv").config();
 
-const uri = process.env.DATABASE_URL
+const uri = process.env.DATABASE_URL;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -15,5 +15,6 @@ const dbName = "Line";
 const db = client.db(dbName);
 
 module.exports = {
-    db
-}
+  db,
+  client,
+};

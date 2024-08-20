@@ -31,7 +31,7 @@ const postTypeDefs = `#graphql
     type Query {
         posts: [Post]
 
-        postById(id: Int!): Post
+        postById(id: String!): Post
     }
 
     input PostForm {
@@ -53,8 +53,16 @@ const postTypeDefs = `#graphql
 
 const postResolver = {
   Query: {
-    posts: async () => {
-      return await Post.findAll();
+    posts: async (parent,args,contextValue) => {
+      const pipeline = []
+
+      pipeline.push({
+        $sort:{
+          createdAt: 1
+        }
+      })
+      // return await Post.findAll();
+      return await db.collection('Posts').aggregate(pipeline).toArray()
     },
     postById: async (parent, args) => {
       return await Post.findByPk(args.id);
@@ -91,7 +99,7 @@ const postResolver = {
       let usera = await contextValue.authentication();
 
       let username = usera.username;
-      
+
       let like = await Post.addLike(postId, { username });
 
       return like;
