@@ -56,13 +56,10 @@ const userResolver = {
         throw new Error("Username cannot be empty");
       }
 
-      // const username  = form.username
-      // const checkUsername =  await User.findOne({username:form.username})
       const checkUsername = await db
         .collection("User")
         .findOne({ username: form.username });
 
-      console.log(checkUsername);
 
       if (checkUsername) {
         throw new Error("Username must be unique");
@@ -98,6 +95,9 @@ const userResolver = {
       }
       form.password = hashSync(form.password);
       const result = await User.create(form);
+
+      delete result.password
+
       return result;
     },
     login: async (parent, args) => {
@@ -116,14 +116,12 @@ const userResolver = {
       }
 
       const checkPassword = comparePassword(password, checkEmail.password);
-      console.log(checkPassword, checkEmail);
 
       if (!checkPassword) {
         throw new Error("Email / password invalid");
       }
 
       const accessToken = signToken({ _id: checkEmail._id });
-    //   const accessToken = sign({ _id: checkEmail.id },'wkwk');
 
       return {
         _id: checkEmail.id,
