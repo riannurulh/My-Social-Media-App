@@ -1,9 +1,9 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require('dotenv').config()
 const { hashSync } = require("bcryptjs");
 const usersJson = require("./users.json");
 const postsJson = require("./posts.json");
-const uri =
-  "mongodb+srv://riannurul57:z7pZpD3LXHWl3Vym@rian.jgwik.mongodb.net/?retryWrites=true&w=majority&appName=Rian";
+const uri = process.env.DATABASE_URL;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -30,20 +30,20 @@ async function run() {
     const users = await usersCollection.insertMany(userHashPass);
 
     // Seeding posts
-    const postsCollection = db.collection('Posts')
+    const postsCollection = db.collection("Posts");
     // - delete all post
-    await postsCollection.deleteMany({})
+    await postsCollection.deleteMany({});
     // - assign authorId from the first inserted user id
-    const postsWithAuthorId = postsJson.map(el => {
-      el.authorId = new ObjectId(users.insertedIds[0])
-      el.createdAt = el.updatedAt =  new Date()
-      el.comments.map(el=>{
-        el.createdAt = el.updatedAt =  new Date()
-        return el
-      })
-      return el
-    })
-    await postsCollection.insertMany(postsWithAuthorId)
+    const postsWithAuthorId = postsJson.map((el) => {
+      el.authorId = new ObjectId(users.insertedIds[0]);
+      el.createdAt = el.updatedAt = new Date();
+      el.comments.map((el) => {
+        el.createdAt = el.updatedAt = new Date();
+        return el;
+      });
+      return el;
+    });
+    await postsCollection.insertMany(postsWithAuthorId);
   } finally {
     // Ensures that the client will close when you finish/error
     await client.close();
