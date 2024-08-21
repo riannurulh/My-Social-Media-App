@@ -1,6 +1,7 @@
 const { hashSync } = require("bcryptjs");
 const { db } = require("../config/mongodb");
 const Post = require("../models/post");
+const redis = require("../config/redis");
 
 const postTypeDefs = `#graphql
     type Comments {
@@ -26,6 +27,7 @@ const postTypeDefs = `#graphql
         likes: [Likes]
         createdAt: String
         updatedAt: String
+        author: User
     }
 
     type Query {
@@ -53,18 +55,41 @@ const postTypeDefs = `#graphql
 
 const postResolver = {
   Query: {
-    posts: async (parent,args,contextValue) => {
-      const pipeline = []
+    posts: async (parent, args, contextValue) => {
+      await contextValue.authentication();
+      const cachePosts = await redis.get("posts:all");
+      if (cachePosts) {
+        return JSON.parse(cachePosts);
+      }
+      const pipeline = [];
 
       pipeline.push({
-        $sort:{
-          createdAt: 1
-        }
-      })
+        $sort: {
+          createdAt: 1,
+        },
+      });
+      pipeline.push({
+        $lookup: {
+          from: "User",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author",
+        },
+      });
+
+      pipeline.push({
+        $unwind: {
+          path: "$author",
+        },
+      });
       // return await Post.findAll();
-      return await db.collection('Posts').aggregate(pipeline).toArray()
+      let result = await db.collection("Posts").aggregate(pipeline).toArray();
+
+      await redis.set("posts:all", JSON.stringify(result));
+      return result;
     },
-    postById: async (parent, args) => {
+    postById: async (parent, args, contextValue) => {
+      await contextValue.authentication();
       return await Post.findByPk(args.id);
     },
   },
@@ -79,17 +104,22 @@ const postResolver = {
       form.authorId = user._id;
 
       const result = await Post.create(form);
+      await redis.del("posts:all");
       return result;
     },
     addComment: async (parent, args, contextValue) => {
       let { postId, content } = args;
 
       let user = await contextValue.authentication();
+      let checkPost = await Post.findByPk(postId);
+      if (!checkPost) {
+        throw new Error("Post not found");
+      }
 
       let username = user.username;
 
       let post = await Post.addComment(postId, { content, username });
-
+      await redis.del("posts:all");
       return post;
     },
 
@@ -99,9 +129,17 @@ const postResolver = {
       let usera = await contextValue.authentication();
 
       let username = usera.username;
+      let checkPost = await Post.findByPk(postId);
+      if (!checkPost) {
+        throw new Error("Post not found");
+      }
 
+      const allowLike = checkPost.likes.find((el) => el.username === username);
+      if (allowLike) {
+        throw new Error("you are already liked this post");
+      }
       let like = await Post.addLike(postId, { username });
-
+      await redis.del("posts:all");
       return like;
     },
   },

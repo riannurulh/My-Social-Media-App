@@ -37,7 +37,7 @@ const userTypeDefs = `#graphql
     type Mutation {
         register(form: UserForm): User
         #pass belom diapus pas regis
-        login(email: String!, password: String!): LoginResponse
+        login(username: String!, password: String!): LoginResponse
     }
 `;
 
@@ -50,6 +50,7 @@ const userResolver = {
       return await User.findByPk(args.id);
     },
     userByUsername: async (parent, args, contextValue) => {
+      await contextValue.authentication();
       const { username } = args;
       console.log(username, "awikawik");
 
@@ -74,8 +75,8 @@ const userResolver = {
         },
       });
       const result = await db.collection("User").aggregate(pipeline).toArray();
-      
-      delete result[0].password
+
+      delete result[0].password;
       console.log(result);
 
       return result[0];
@@ -131,24 +132,24 @@ const userResolver = {
       return result;
     },
     login: async (parent, args) => {
-      const { email, password } = args;
-      if (!email) {
-        throw new Error("Email is required");
+      const { username, password } = args;
+      if (!username) {
+        throw new Error("Username is required");
       }
       if (!password) {
         throw new Error("Password is required");
       }
 
-      const checkEmail = await db.collection("User").findOne({ email });
+      const checkUsername = await db.collection("User").findOne({ username });
 
-      if (!checkEmail) {
-        throw new Error("Email / password invalid");
+      if (!checkUsername) {
+        throw new Error("Username / password invalid");
       }
 
       const checkPassword = comparePassword(password, checkEmail.password);
 
       if (!checkPassword) {
-        throw new Error("Email / password invalid");
+        throw new Error("Username / password invalid");
       }
 
       const accessToken = signToken({ _id: checkEmail._id });

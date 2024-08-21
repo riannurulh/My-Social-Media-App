@@ -1,5 +1,6 @@
 const { hashSync } = require("bcryptjs");
 const { db } = require("../config/mongodb");
+const { ObjectId } = require("mongodb");
 const Post = require("../models/post");
 const Follow = require("../models/follow");
 
@@ -34,6 +35,18 @@ const followResolver = {
       let user = await contextValue.authentication();
 
       let followerId = user._id;
+
+      let checkFollow = await Follow.findAll();
+      console.log(checkFollow, "wkwkwkkwk");
+      checkFollow = checkFollow.find(
+        (el) =>
+          el.followingId === followingId &&
+          el.followerId === followerId
+      );
+
+      if (checkFollow) {
+        throw new Error("udah ada");
+      }
 
       let follow = await Follow.create({ followerId, followingId });
 

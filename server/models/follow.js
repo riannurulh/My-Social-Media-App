@@ -21,8 +21,8 @@ class Follow {
     }
 
     static async create(inputValue){
+        inputValue.followingId = new ObjectId(inputValue.followingId)
         const result = await this.col().insertOne(inputValue)
-
         return {
             ...inputValue,
             _id: result.insertedId
