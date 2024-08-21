@@ -1,4 +1,5 @@
 const Redis = require('ioredis')
+require("dotenv").config()
 
 const redis = new Redis({
     port: 14503, // Redis port
