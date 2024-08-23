@@ -146,17 +146,17 @@ const userResolver = {
         throw new Error("Username / password invalid");
       }
 
-      const checkPassword = comparePassword(password, checkEmail.password);
+      const checkPassword = comparePassword(password, checkUsername.password);
 
       if (!checkPassword) {
         throw new Error("Username / password invalid");
       }
 
-      const accessToken = signToken({ _id: checkEmail._id });
+      const accessToken = signToken({ _id: checkUsername._id });
 
       return {
-        _id: checkEmail.id,
-        email: checkEmail.email,
+        _id: checkUsername.id,
+        email: checkUsername.username,
         accessToken: accessToken,
       };
     },

@@ -57,10 +57,10 @@ const postResolver = {
   Query: {
     posts: async (parent, args, contextValue) => {
       await contextValue.authentication();
-      const cachePosts = await redis.get("posts:all");
-      if (cachePosts) {
-        return JSON.parse(cachePosts);
-      }
+      // const cachePosts = await redis.get("posts:all");
+      // if (cachePosts) {
+      //   return JSON.parse(cachePosts);
+      // }
       const pipeline = [];
 
       pipeline.push({
@@ -85,17 +85,33 @@ const postResolver = {
       // return await Post.findAll();
       let result = await db.collection("Posts").aggregate(pipeline).toArray();
 
-      await redis.set("posts:all", JSON.stringify(result));
+      // await redis.set("posts:all", JSON.stringify(result));
       return result;
     },
     postById: async (parent, args, contextValue) => {
       await contextValue.authentication();
+      const pipeline = []
+      pipeline.push({
+        $lookup: {
+          from: "User",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author",
+        },
+      });
+      pipeline.push({
+        $unwind: {
+          path: "$author",
+        },
+      });
       return await Post.findByPk(args.id);
     },
   },
   Mutation: {
     AddPost: async (parent, { form }, contextValue) => {
       const user = await contextValue.authentication();
+      console.log(user);
+      
 
       if (!form.content) {
         throw new Error("Content cannot be empty");

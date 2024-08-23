@@ -12,7 +12,7 @@ const server = new ApolloServer({
 });
 
 startStandaloneServer(server, {
-  listen: { port: 4000 },
+  listen: { port: 3000 },
   context: ({ req }) => {
     async function authentication() {
       const authorization = req.headers.authorization || "";
