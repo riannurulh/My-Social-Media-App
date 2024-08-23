@@ -81,7 +81,22 @@ export default function DetailPost({ route, navigate }) {
         <Button
           title={loadingComment ? "Submitting..." : "Post"}
           // onPress={handleComment}
-          
+          onPress={async () => {
+            console.log(comment, "contet");
+            console.log(route.params.post._id, "llllllll");
+
+            const result = await commentPostFn({
+              variables: {
+                postId: route.params.post._id,
+                content: comment,
+              },
+            });
+            console.log(result.data, "aaaaaaa");
+            // setComments(comments.push(result.data.addComments))
+            setComments([...comments, result.data.addComment]);
+            setComment('');
+            console.log(comments,'update dong');
+          }}
         />
         {comments.length > 0 && (
           <View style={styles.commentList}>
