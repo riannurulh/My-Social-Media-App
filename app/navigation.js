@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import HomeScreen from "./pages/Home";
 import CreatePost from "./pages/CreatePost";
 import DetailPost from "./pages/DetailPost";
+import Register from "./pages/Register";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,9 +42,8 @@ export default function Navigation() {
   const { isSignedIn } = useContext(AuthContext);
 
   useEffect(() => {
-    console.log(SecureStore.getItem("access_token"),'navcheck');
-    
-    
+    console.log(SecureStore.getItem("access_token"), "navcheck");
+
     SecureStore.getItemAsync("access_token").then((r) => {
       console.log(r, "<<<token");
       if (r) {
@@ -69,7 +69,10 @@ export default function Navigation() {
             <Stack.Screen name="Post" component={DetailPost} />
           </>
         ) : (
-          <Stack.Screen name="Login" component={Login} />
+          <> 
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Register" component={Register} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

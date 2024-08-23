@@ -102,3 +102,14 @@ export const CREATE_POST =gql`
   }
 }
 `
+
+export const CREATE_COMMENT = gql`
+mutation AddComment($postId: String!, $content: String!) {
+  addComment(postId: $postId, content: $content) {
+    content
+    username
+    createdAt
+    updatedAt
+  }
+}
+`

@@ -100,7 +100,7 @@ export default function HomeScreen({ navigation }) {
                   <Text>{props.item.likes.length}</Text>
                   <TouchableOpacity
                     style={styles.postLikes}
-                    onPress={() => navigation.navigate("Post", { post: item })}
+                    // onPress={() => navigation.navigate("Post", { post: item })}
                   >
                     <Ionicons
                       name="chatbubble-outline"
@@ -108,6 +108,7 @@ export default function HomeScreen({ navigation }) {
                       color="black"
                     />
                   </TouchableOpacity>
+                  <Text>{props.item.comments.length}</Text>
                 </View>
                 <Text style={styles.timestamp}>{props.item.createdAt}</Text>
               </View>
