@@ -13,17 +13,13 @@ import { AuthContext } from "../context/auth";
 import { useMutation } from "@apollo/client";
 import { LOGIN } from "../query/users";
 
-export default function Login({ navigation, route }) {
-  console.log(route.params);
-
+export default function Login({ navigation }) {
   const { setIsSignedIn } = useContext(AuthContext);
   const [loginFn, { data, loading, error }] = useMutation(LOGIN);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-//   const [isError, setIsError] = useState("");
-// if (route.params) {
-//   setIsError(route.params.error)
-// }
+  const [isError, setIsError] = useState("");
+
   return (
     <View style={styles.container}>
       <Image
@@ -32,7 +28,7 @@ export default function Login({ navigation, route }) {
         }}
         style={styles.logo}
       />
-      {/* {isError&&(<Text>{route.params.error}</Text>)} */}
+      {isError && <Text style={styles.errorText}>Error: {isError}</Text>}
       <TextInput
         style={styles.input}
         placeholder="Username"
@@ -48,35 +44,33 @@ export default function Login({ navigation, route }) {
         value={password}
         onChangeText={setPassword}
       />
-      <Button
-        style={styles.button}
-        title={loading ? "Login..." : "Login"}
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonLoading]}
         onPress={async () => {
           try {
-            console.log({ password, username });
             const result = await loginFn({
-              variables: {
-                username,
-                password,
-              },
+              variables: { username, password },
             });
-            console.log(result,"<<<<");
             
             await SecureStore.setItemAsync(
               "access_token",
               result.data.login.accessToken
             );
-            console.log(SecureStore.getItem("access_token"),'<<<<');
             
             setIsSignedIn(true);
           } catch (error) {
-            console.log(error, "tai");
-            // navigation.navigate("Login", { error });
+            setIsError(error.message);
           }
         }}
-      />
-      {/* <Text style={styles.buttonText}>Log In</Text> */}
-      {/* </TouchableOpacity> */}
+      >
+        <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
+      </TouchableOpacity>
+      <View style={styles.signupContainer}>
+        <Text style={styles.signupText}>New here?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <Text style={styles.signupLink}> Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -86,34 +80,56 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F6F6F6",
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     alignSelf: "center",
     marginBottom: 40,
   },
   input: {
     height: 50,
-    borderColor: "#e5e5e5",
+    borderColor: "#dcdcdc",
     borderWidth: 1,
-    // borderRadius: 25,
+    borderRadius: 8,
     paddingHorizontal: 20,
-    marginBottom: 10,
-    backgroundColor: "#f7f7f7",
+    marginBottom: 15,
+    backgroundColor: "#ffffff",
   },
   button: {
     height: 50,
-    backgroundColor: "#00C300",
-    // borderRadius: 25,
+    backgroundColor: "#00C300", 
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
   },
+  buttonLoading: {
+    backgroundColor: "#6dd400",
+  },
   buttonText: {
-    color: "#FFFFFF",
+    color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  signupContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  signupText: {
+    color: "#888888",
+    fontSize: 16,
+  },
+  signupLink: {
+    color: "#00C300", 
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

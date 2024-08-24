@@ -27,6 +27,7 @@ const followResolver = {
     followerList: async (parent, args, contextValue) => {
       return await Follow.findAll();
     },
+    
   },
   Mutation: {
     follow: async (parent, args, contextValue) => {
@@ -47,8 +48,8 @@ const followResolver = {
       if (checkFollow) {
         throw new Error("udah ada");
       }
-
-      let follow = await Follow.create({ followerId, followingId });
+      followingId = new ObjectId(followingId)
+      let follow = await Follow.create({ followerId, followingId});
 
       return follow;
     },

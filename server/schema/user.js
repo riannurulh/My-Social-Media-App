@@ -14,12 +14,21 @@ const userTypeDefs = `#graphql
         email: String
     }
 
+
+    type UserResponse {
+        user: User
+        followers: [User]
+        followings: [User]
+    }
+
     type Query {
         users: [User]
-
         userById(id: String!): User
-        userByUsername(username: String): User
+        userByUsername(username: String): [User]
+        profile(userId: String!): UserResponse
+        userLoginProfile: UserResponse
     }
+
 
     input UserForm {
         name: String
@@ -49,6 +58,135 @@ const userResolver = {
     userById: async (parent, args, contextValue) => {
       return await User.findByPk(args.id);
     },
+    userLoginProfile: async (parent, args, contextValue) => {
+      const user = await contextValue.authentication();
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const getFollowersAndFollowings = async () => {
+        const followers = await db
+          .collection("Follow")
+          .aggregate([
+            { $match: { followingId: user._id } },
+            {
+              $lookup: {
+                from: "User",
+                localField: "followerId",
+                foreignField: "_id",
+                as: "follower",
+              },
+            },
+            { $unwind: "$follower" },
+          ])
+          .toArray();
+
+        const followings = await db
+          .collection("Follow")
+          .aggregate([
+            { $match: { followerId: user._id } },
+            {
+              $lookup: {
+                from: "User",
+                localField: "followingId",
+                foreignField: "_id",
+                as: "following",
+              },
+            },
+            { $unwind: "$following" },
+          ])
+          .toArray();
+
+        return {
+          followers: followers.map((doc) => doc.follower),
+          followings: followings.map((doc) => doc.following),
+        };
+      };
+
+      const { followers, followings } = await getFollowersAndFollowings();
+
+      return {
+        user,
+        followers,
+        followings,
+      };
+    },
+    profile: async (parent, { userId }) => {
+      const user = await User.findByPk(userId);
+      if (!user) {
+        throw new Error("not found");
+      }
+      let followers = [];
+      let followings = [];
+
+      let follower = await db
+        .collection("follow")
+        .aggregate([
+          {
+            $match: {
+              followingId: user._id,
+            },
+          },
+
+          {
+            $lookup: {
+              from: "user",
+              localField: "followerId",
+              foreignField: "_id",
+              as: "follower",
+            },
+          },
+
+          {
+            $unwind: {
+              path: "$follower",
+            },
+          },
+        ])
+        .toArray();
+
+      let following = await db
+        .collection("follow")
+        .aggregate([
+          {
+            $match: {
+              followerId: user._id,
+            },
+          },
+
+          {
+            $lookup: {
+              from: "user",
+              localField: "followingId",
+              foreignField: "_id",
+              as: "following",
+            },
+          },
+
+          {
+            $unwind: {
+              path: "$following",
+            },
+          },
+        ])
+        .toArray();
+
+      follower.map((el) => {
+        return followers.push(el.follower);
+      });
+      console.log(follower);
+
+      console.log(following);
+      following.map((el) => {
+        return followings.push(el.following);
+      });
+
+      return {
+        user,
+        followers,
+        followings,
+      };
+    },
     userByUsername: async (parent, args, contextValue) => {
       await contextValue.authentication();
       const { username } = args;
@@ -77,9 +215,9 @@ const userResolver = {
       const result = await db.collection("User").aggregate(pipeline).toArray();
 
       delete result[0].password;
-      console.log(result);
+      console.log(result,'iki');
 
-      return result[0];
+      return result;
     },
   },
   Mutation: {

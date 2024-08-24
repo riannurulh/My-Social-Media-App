@@ -1,4 +1,3 @@
-// screens/HomeScreen.js
 import React from "react";
 import * as SecureStore from "expo-secure-store";
 import {
@@ -7,110 +6,83 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
   Image,
   Pressable,
-  Button,
 } from "react-native";
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { Ionicons, EvilIcons } from "@expo/vector-icons";
-import { GET_POST, LIKE_POST } from "../query/posts";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { GET_POST, LIKE_POST } from "../query/posts";
+import { LOGIN_PROFILE } from "../query/users";
 
 export default function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_POST);
-  console.log(data, loading, error, "home");
-  let [likePostFn, { loadingLike, errorLike }] = useMutation(LIKE_POST, {
+  const [likePostFn, { loading: loadingLike, error: errorLike }] = useMutation(LIKE_POST, {
     refetchQueries: [GET_POST],
   });
-  // async function handleLike(value) {
-  //   console.log("masukkkkkk");
 
-  //   let [likePostFn, { loading, error }] = useMutation(LIKE_POST, {
-  //     refetchQueries: [GET_POST],
-  //   });
-  //   const result = await likePostFn({
-  //     variables: {
-  //       postId: value,
-  //     },
-  //   });
-  //   console.log(result, "tatat");
-  //   return;
-  // }
-  // if (error) {
-  //   console.log(error,'mampir');
+  const { data: dataLogin, loading: loadingLogin, error: errorLogin } = useQuery(LOGIN_PROFILE);
 
-  //   // await SecureStore.deleteItemAsync("access_token");
-  //   // navigation.navigate("Login");
-  //   return
-  // }
-  if (loading) {
-    return <Text>Loading...</Text>;
+  if (loading || loadingLogin) {
+    return <Text style={styles.loadingText}>Loading...</Text>;
   }
-  
-  if (loadingLike) {
-    return <Text>Loading...</Text>;
+
+  if (error || errorLike || errorLogin) {
+    return <Text style={styles.errorText}>An error occurred. Please try again later.</Text>;
   }
-  
 
   return (
-    <SafeAreaView>
-      <View style={styles.voom}>
-        <Text style={styles.headerVoom}>LINE VOOM</Text>
-        <Pressable onPress={() => navigation.navigate("CreatePost")}>
-          <Text style={styles.headerText}>+</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>LINE VOOM</Text>
+        <Pressable style={styles.createPostButton} onPress={() => navigation.navigate("CreatePost")}>
+          <Text style={styles.createPostText}>+</Text>
         </Pressable>
       </View>
       <FlatList
         data={data.posts}
         keyExtractor={(item) => item._id}
-        renderItem={(props) => {
+        renderItem={({ item }) => {
+          const isLiked = item.likes.some(
+            (el) => el.username === dataLogin.userLoginProfile.user.username
+          );
+
           return (
-            <Pressable
-              onPress={() => navigation.navigate("Post", { post: props.item })}
-            >
-              <View key={props.item._id} style={styles.postContainer}>
-                <View style={styles.header}>
+            <Pressable onPress={() => navigation.navigate("Post", { post: item })}>
+              <View style={styles.postContainer}>
+                <View style={styles.postHeader}>
                   <Image
-                    source={{ uri: props.item.imgUrl }}
+                    source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
                     style={styles.avatar}
                   />
-                  <Text style={styles.postUser}>{props.item.author.name}</Text>
+                  <Text style={styles.username}>{item.author.name}</Text>
                 </View>
-                <Text style={styles.postContent}>{props.item.content}</Text>
-                <View style={styles.footer}>
+                <Text style={styles.postContent}>{item.content}</Text>
+                {item.imgUrl && <Image source={{ uri: item.imgUrl }} style={styles.postImage} />}
+                <View style={styles.postFooter}>
                   <TouchableOpacity
-                    style={styles.postLikes}
+                    style={styles.likeButton}
                     onPress={async () => {
-                      // handleLike(props.item._id)
-                      console.log("masukkkkkk");
-
-                      const result = await likePostFn({
-                        variables: {
-                          postId: props.item._id,
-                        },
-                      });
-                      console.log(result, "tatat");
-                      return;
+                      try {
+                        await likePostFn({ variables: { postId: item._id } });
+                      } catch (error) {
+                        console.error("Failed to like post", error);
+                      }
                     }}
                   >
-                    {/* <Icon name="thumb-up" size={15} color="gray" /> */}
-                    <Ionicons name="happy-outline" size={24} color="black" />
-                  </TouchableOpacity>
-                  <Text>{props.item.likes.length}</Text>
-                  <TouchableOpacity
-                    style={styles.postLikes}
-                    // onPress={() => navigation.navigate("Post", { post: item })}
-                  >
                     <Ionicons
-                      name="chatbubble-outline"
+                      name={isLiked ? "happy" : "happy-outline"}
                       size={24}
-                      color="black"
+                      color="#00C300"
                     />
                   </TouchableOpacity>
-                  <Text>{props.item.comments.length}</Text>
+                  <Text style={styles.likeCount}>{item.likes.length}</Text>
+                  <TouchableOpacity style={styles.commentButton} disabled>
+                    <Ionicons name="chatbubble-outline" size={24} color="gray" />
+                  </TouchableOpacity>
+                  <Text style={styles.commentCount}>{item.comments.length}</Text>
                 </View>
-                <Text style={styles.timestamp}>{props.item.createdAt}</Text>
+                <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleDateString()}</Text>
               </View>
             </Pressable>
           );
@@ -121,107 +93,110 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  headerVoom: {
-    fontSize: 30,
-    fontWeight: "500",
-  },
-  headerText: {
-    fontSize: 30,
-  },
-  voom: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingLeft: 15,
-    paddingRight: 15,
-    margin: 10,
-  },
   container: {
     flex: 1,
-    // backgroundColor: "#f5f5f5",
-    backgroundColor: "fff",
-  },
-  newPostContainer: {
-    padding: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  postButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  postButtonText: {
-    color: "#fff",
-  },
-  previewImage: {
-    width: "100%",
-    height: 200,
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  postContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 5,
-    marginHorizontal: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 1 },
+    backgroundColor: "#FFFFFF", 
   },
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#FFFFFF",
+    elevation: 4, 
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  createPostButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#00C300",
+    borderRadius: 20,
+    justifyContent: "center",
     alignItems: "center",
   },
-  avatar: {
-    width: 25,
-    height: 25,
-    borderRadius: 20,
-  },
-  postUser: {
-    marginLeft: 10,
-    fontSize: 16,
+  createPostText: {
+    color: "#FFFFFF",
+    fontSize: 24,
     fontWeight: "bold",
   },
+  postContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    padding: 15,
+    margin: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  postHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
   postContent: {
-    marginTop: 10,
     fontSize: 14,
     color: "#333",
+    marginBottom: 10,
   },
   postImage: {
     width: "100%",
     height: 200,
+    borderRadius: 10,
     marginBottom: 10,
-    borderRadius: 5,
   },
-  footer: {
+  postFooter: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginBottom: 10,
   },
-  postLikes: {
-    color: "gray",
-    marginLeft: 10,
+  likeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  likeCount: {
+    fontSize: 14,
+    color: "#333",
+    marginRight: 15,
+  },
+  commentButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  commentCount: {
+    fontSize: 14,
+    color: "#333",
   },
   timestamp: {
-    marginTop: 5,
-    color: "gray",
     fontSize: 12,
+    color: "#999",
+  },
+  loadingText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

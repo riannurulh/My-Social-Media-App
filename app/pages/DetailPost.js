@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -8,180 +8,214 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
+  FlatList,
+  TouchableOpacity,
 } from "react-native";
-import {
-  CREATE_COMMENT,
-  GET_DETAIL_POST,
-  GET_POST,
-  LIKE_POST,
-} from "../query/posts";
+import { CREATE_COMMENT, GET_POST } from "../query/posts";
 import { useNavigation } from "@react-navigation/native";
 
-export default function DetailPost({ route, navigate }) {
-  // const { data, loading, error } = useQuery(GET_DETAIL_POST, {
-  //   variables: { postByIdId: route.params.post }
-  // });
+export default function DetailPost({ route }) {
   const navigation = useNavigation();
-  console.log(route.params, "ini di deat");
-  // console.log(data, loading, error, "ini di deat");
-
-  //   const [likes, setLikes] = useState(route.params.post);
   const [comment, setComment] = useState("");
-  let [commentPostFn, { loadingComment, errorComment }] = useMutation(
+  const [comments, setComments] = useState(route.params.post.comments);
+  const [commentPostFn, { loading: loadingComment }] = useMutation(
     CREATE_COMMENT,
     {
       refetchQueries: [GET_POST],
     }
   );
-  const [comments, setComments] = useState(route.params.post.comments);
-  console.log(comments, "cekisi");
 
-  // const handleLike = () => {
-  //   setLikes(likes + 1);
-  // };
+  const handlePostComment = async () => {
+    if (comment.trim() === "") return;
 
-  // const handleComment = () => {
-  //   if (comment.length === 0) return;
+    try {
+      const result = await commentPostFn({
+        variables: {
+          postId: route.params.post._id,
+          content: comment,
+        },
+      });
 
-  //   setComments([...comments, comment]);
-  //   setComment("");
-  // };
-  if (loadingComment) {
-    return <Text>Loading...</Text>;
-  }
-  useEffect(()=>{
-    console.log(comments);
-    
-  },[setComments])
+      setComments([...comments, result.data.addComment]);
+      setComment("");
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
+  };
+
+  const renderComment = ({ item }) => (
+    <View style={styles.commentContainer}>
+      <View style={styles.commentHeader}>
+        <Image
+          source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+          style={styles.avatar}
+        />
+        <Text style={styles.commentUser}>{item.username}</Text>
+      </View>
+      <Text style={styles.commentContent}>{item.content}</Text>
+      <Text style={styles.commentTimestamp}>{item.createdAt}</Text>
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.postContainer}>
-        <Text style={styles.postUser}>{route.params.post.author.name}</Text>
-        <Text style={styles.postContent}>{route.params.post.content}</Text>
-        {route.params.post.image && (
+        <View style={styles.header}>
           <Image
-            source={{ uri: route.params.post.image }}
+            source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+            style={styles.avatar}
+          />
+          <Text style={styles.postUser}>{route.params.post.author.name}</Text>
+        </View>
+        {/* <Text style={styles.postUser}>{route.params.post.author.name}</Text> */}
+        <Text style={styles.postContent}>{route.params.post.content}</Text>
+        {route.params.post.imgUrl && (
+          <Image
+            source={{ uri: route.params.post.imgUrl }}
             style={styles.postImage}
           />
         )}
         <Text style={styles.postLikes}>
           {route.params.post.likes.length} likes
         </Text>
-        {/* <Button title="Like" 
-      // onPress={handleLike} 
-      /> */}
       </View>
-      <View style={styles.commentsContainer}>
+
+      <View style={styles.commentsSection}>
         <TextInput
           value={comment}
           onChangeText={setComment}
           placeholder="Write a comment..."
           style={styles.input}
+          multiline
         />
-        <Button
-          title={loadingComment ? "Submitting..." : "Post"}
-          // onPress={handleComment}
-          onPress={async () => {
-            console.log(comment, "contet");
-            console.log(route.params.post._id, "llllllll");
+        <TouchableOpacity
+          style={[
+            styles.button,
+            { backgroundColor: loadingComment ? "#d1d1d1" : "#00C300" },
+          ]}
+          onPress={handlePostComment}
+          disabled={loadingComment}
+        >
+          <Text style={styles.buttonText}>
+            {loadingComment ? "Submitting..." : "Post"}
+          </Text>
+        </TouchableOpacity>
 
-            const result = await commentPostFn({
-              variables: {
-                postId: route.params.post._id,
-                content: comment,
-              },
-            });
-            console.log(result.data, "aaaaaaa");
-            // setComments(comments.push(result.data.addComments))
-            setComments([...comments, result.data.addComment]);
-            setComment('');
-            console.log(comments,'update dong');
-          }}
+        <FlatList
+          data={comments}
+          renderItem={renderComment}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.commentList}
         />
-        {comments.length > 0 && (
-          <View style={styles.commentList}>
-            {comments.map((com) => (
-              <View style={styles.commentsContainer}>
-                <View style={styles.header}>
-                  <Image source={{ uri: com.imgUrl }} style={styles.avatar} />
-                  <Text style={styles.postUser}>{com.username}</Text>
-                </View>
-                <Text style={styles.comment}>{com.content}</Text>
-                <Text style={styles.timestamp}>{com.createdAt}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
     backgroundColor: "#f5f5f5",
   },
   postContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     padding: 15,
-    borderRadius: 5,
-    marginBottom: 15,
+    borderRadius: 10,
+    margin: 15,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   postUser: {
     fontWeight: "bold",
+    fontSize: 16,
     marginBottom: 5,
   },
   postContent: {
+    fontSize: 16,
     marginBottom: 10,
   },
   postImage: {
     width: "100%",
     height: 200,
+    borderRadius: 10,
     marginBottom: 10,
-    borderRadius: 5,
   },
   postLikes: {
-    color: "gray",
-    marginBottom: 10,
+    color: "#888",
+    fontSize: 14,
   },
-  commentsContainer: {
-    backgroundColor: "#fff",
+  commentsSection: {
+    flex: 1,
+    backgroundColor: "#ffffff",
     padding: 15,
-    borderRadius: 5,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
+    borderRadius: 10,
+    marginHorizontal: 15,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   input: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
+    borderRadius: 8,
     padding: 10,
-    borderRadius: 5,
     marginBottom: 10,
+    fontSize: 16,
+    backgroundColor: "#fafafa",
+  },
+  button: {
+    height: 45,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
   commentList: {
     marginTop: 15,
   },
-  comment: {
+  commentContainer: {
+    marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
-    paddingVertical: 10,
+    paddingBottom: 10,
   },
-  timestamp: {
-    marginTop: 5,
-    color: "gray",
-    fontSize: 12,
+  commentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
   },
   avatar: {
-    width: 25,
-    height: 25,
-    borderRadius: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  commentUser: {
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  commentContent: {
+    fontSize: 14,
+  },
+  commentTimestamp: {
+    marginTop: 5,
+    color: "#888",
+    fontSize: 12,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "start",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#FFFFFF",
+    elevation: 4, 
   },
 });
