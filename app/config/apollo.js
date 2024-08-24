@@ -4,7 +4,8 @@ import * as SecureStore from 'expo-secure-store'
 
 const httpLink = createHttpLink({
   // uri: 'https://9736-139-228-111-126.ngrok-free.app',
-  uri: 'http://localhost:3000',
+  uri: 'https://p3gc1.vexus.my.id',
+  // uri:'http://localhost:3000'
 })
 
 const authLink = setContext(async (_,{headers})=>{

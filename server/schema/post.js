@@ -65,7 +65,7 @@ const postResolver = {
 
       pipeline.push({
         $sort: {
-          createdAt: 1,
+          createdAt: -1,
         },
       });
       pipeline.push({

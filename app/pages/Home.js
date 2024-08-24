@@ -60,7 +60,17 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.postContent}>{item.content}</Text>
                 {item.imgUrl && <Image source={{ uri: item.imgUrl }} style={styles.postImage} />}
                 <View style={styles.postFooter}>
+                  {isLiked?
                   <TouchableOpacity
+                    style={styles.likeButton}
+                    disabled={true}
+                  >
+                    <Ionicons
+                      name="happy"
+                      size={24}
+                      color="#00C300"
+                    />
+                  </TouchableOpacity>:<TouchableOpacity
                     style={styles.likeButton}
                     onPress={async () => {
                       try {
@@ -71,11 +81,12 @@ export default function HomeScreen({ navigation }) {
                     }}
                   >
                     <Ionicons
-                      name={isLiked ? "happy" : "happy-outline"}
+                      name="happy-outline"
                       size={24}
                       color="#00C300"
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity>}
+                  
                   <Text style={styles.likeCount}>{item.likes.length}</Text>
                   <TouchableOpacity style={styles.commentButton} disabled>
                     <Ionicons name="chatbubble-outline" size={24} color="gray" />

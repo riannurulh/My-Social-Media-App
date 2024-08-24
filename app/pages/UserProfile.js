@@ -13,10 +13,13 @@ import { LOGIN_PROFILE } from "../query/users";
 
 const UserProfile = () => {
   const { data, loading, error } = useQuery(LOGIN_PROFILE, {
-    fetchPolicy: 'network-only' 
+    fetchPolicy: "network-only",
   });
 
-  if (loading) return <ActivityIndicator size="large" color="#00C300" style={styles.loader} />;
+  if (loading)
+    return (
+      <ActivityIndicator size="large" color="#00C300" style={styles.loader} />
+    );
   if (error) return <Text style={styles.error}>Error: {error.message}</Text>;
 
   const { user, followers, followings } = data.userLoginProfile;
@@ -33,7 +36,10 @@ const UserProfile = () => {
         <Text style={styles.profileEmail}>{user.email}</Text>
       </View>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Followers</Text>
+        <View style={styles.followerContainer}>
+          <Text style={styles.sectionTitle}>Followers</Text>
+          <Text>{followers.length}</Text>
+        </View>
         {followers.length > 0 ? (
           <FlatList
             data={followers}
@@ -71,13 +77,17 @@ const UserProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
     padding: 16,
   },
+  followerContainer:{
+    flex: "row",
+    justifyContent:"flex-start"
+  },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
-    backgroundColor: '#F9F9F9', 
+    backgroundColor: "#F9F9F9",
     padding: 16,
     borderRadius: 10,
     shadowColor: "#000",
@@ -93,50 +103,50 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   profileUsername: {
     fontSize: 16,
-    color: '#888',
+    color: "#888",
     marginBottom: 8,
   },
   profileEmail: {
     fontSize: 14,
-    color: '#555',
+    color: "#555",
   },
   section: {
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    color: '#333',
+    color: "#333",
   },
   listItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   listItemText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
   },
   error: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   noDataText: {
-    textAlign: 'center',
-    color: '#888',
+    textAlign: "center",
+    color: "#888",
   },
 });
 
