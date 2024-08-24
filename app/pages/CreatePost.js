@@ -9,10 +9,10 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
-  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation } from "@apollo/client";
 import { CREATE_POST, GET_POST } from "../query/posts";
 
