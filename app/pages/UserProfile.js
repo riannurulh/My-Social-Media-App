@@ -33,7 +33,7 @@ const UserProfile = () => {
         <Text style={styles.profileEmail}>{user.email}</Text>
       </View>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Followers</Text>
+        <Text style={styles.sectionTitle}>Followers : {followers.length}</Text>
         {followers.length > 0 ? (
           <FlatList
             data={followers}
@@ -49,7 +49,7 @@ const UserProfile = () => {
         )}
       </View>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Followings</Text>
+        <Text style={styles.sectionTitle}>Followings : {followings.length}</Text>
         {followings.length > 0 ? (
           <FlatList
             data={followings}
