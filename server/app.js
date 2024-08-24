@@ -5,14 +5,15 @@ const { postTypeDefs, postResolver } = require("./schema/post");
 const { verifyToken } = require("./helpers/jwt");
 const User = require("./models/user");
 const { followTypeDefs, followResolver } = require("./schema/follow");
-
+const PORT = process.env.PORT || 3000;
 const server = new ApolloServer({
   typeDefs: [userTypeDefs, postTypeDefs, followTypeDefs],
   resolvers: [userResolver, postResolver, followResolver],
+  introspection: true,
 });
 
 startStandaloneServer(server, {
-  listen: { port: 3000 },
+  listen: { port: PORT },
   context: ({ req }) => {
     async function authentication() {
       const authorization = req.headers.authorization || "";
