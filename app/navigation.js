@@ -102,7 +102,7 @@ const Tab = createBottomTabNavigator();
 function HomeStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="HomeS" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name=" " component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CreatePost" component={CreatePost} options={{ headerShown: false }} />
       <Stack.Screen name="Post" component={DetailPost} />
     </Stack.Navigator>
@@ -115,7 +115,7 @@ function MainTab() {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={HomeStack}  options={{headerShown:false, tabBarIcon:({color,size})=>(<Ionicons name="home-outline" size={24} color="black" />)}}/>
-      <Tab.Screen name="Searc" component={SearchUser} options={{tabBarIcon:({color,size})=>(<Ionicons name="search-outline" size={24} color="black" />)}}/>
+      <Tab.Screen name="Search" component={SearchUser} options={{tabBarIcon:({color,size})=>(<Ionicons name="search-outline" size={24} color="black" />)}}/>
       <Tab.Screen name="User" component={UserProfile} options={{
         tabBarIcon:({color,size})=>(<Ionicons name="person-outline" size={24} color="black" />),
         headerRight: () => (
