@@ -53,7 +53,7 @@ export default function DetailPost({ route }) {
         <View style={styles.colSec}>
           <Text style={styles.commentUser}>{item.username}</Text>
           <Text style={styles.commentContent}>{item.content}</Text>
-          <Text style={styles.commentTimestamp}>{item.createdAt}</Text>
+          <Text style={styles.commentTimestamp}>{new Date(item.createdAt).toLocaleDateString()}  {new Date(item.createdAt).toLocaleTimeString('id-ID',{minute:'2-digit',second:"2-digit"})}</Text>
         </View>
       </View>
     </View>
