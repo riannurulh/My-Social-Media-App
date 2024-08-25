@@ -116,7 +116,7 @@ function MainTab() {
     <Tab.Navigator>
       <Tab.Screen name="Home" component={HomeStack}  options={{headerShown:false, tabBarIcon:({color,size})=>(<Ionicons name="home-outline" size={24} color="black" />)}}/>
       <Tab.Screen name="Search" component={SearchUser} options={{tabBarIcon:({color,size})=>(<Ionicons name="search-outline" size={24} color="black" />)}}/>
-      <Tab.Screen name="User" component={UserProfile} options={{
+      <Tab.Screen name="Profile" component={UserProfile} options={{
         tabBarIcon:({color,size})=>(<Ionicons name="person-outline" size={24} color="black" />),
         headerRight: () => (
           <Pressable

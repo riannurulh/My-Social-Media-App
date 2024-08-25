@@ -101,7 +101,7 @@ export default function HomeScreen({ navigation }) {
                       <Ionicons
                         name="happy-outline"
                         size={24}
-                        color="#00C300"
+                        color="gray"
                       />
                     </TouchableOpacity>
                   )}
@@ -109,7 +109,7 @@ export default function HomeScreen({ navigation }) {
                   <Text style={styles.likeCount}>{item.likes.length}</Text>
                   <TouchableOpacity style={styles.commentButton} disabled>
                     <Ionicons
-                      name="chatbubble-outline"
+                      name="chatbubble-ellipses-outline"
                       size={24}
                       color="gray"
                     />
