@@ -224,6 +224,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 5,
     backgroundColor: "#FFFFFF",
-    elevation: 4,
+    // elevation: 4,
   },
 });
