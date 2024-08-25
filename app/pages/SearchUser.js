@@ -66,12 +66,12 @@ const SearchUser = () => {
                 }}
                 style={styles.profileImage}
               />
-              <View>
-                <Text style={styles.itemText}>{item.name}</Text>
+              <View style={styles.userInfo}>
+                <Text style={styles.itemTextName} numberOfLines={1} ellipsizeMode="tail" >{item.name}</Text>
                 <Text style={styles.itemText}>@{item.username}</Text>
                 <Text style={styles.itemText}>{item.email}</Text>
               </View>
-              <View>
+              <View style={styles.clicked}>
                 {dataLogin.userLoginProfile.followings.some(
                   (el) => el._id === item._id
                 ) ? (
@@ -154,9 +154,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   itemText: {
-    fontSize: 16,
+    fontSize: 12,
     color: "#333",
     marginBottom: 5,
+  },
+  itemTextName: {
+    fontSize: 16,
+    color: "black",
+    marginBottom: 5,
+    fontWeight:"500"
+
   },
   followButton: {
     backgroundColor: "#00C300",
@@ -190,6 +197,18 @@ const styles = StyleSheet.create({
     color: "red",
     marginTop: 20,
   },
+//   profileImage:{
+//     flex:1,
+//   },
+  userInfo:{
+    flexGrow:2,
+    marginLeft:5,
+    // flexWrap:"wrap",
+    // overflow:"hidden"
+  },
+//   clicked:{
+//     flex:1,
+//   },
 });
 
 export default SearchUser;
