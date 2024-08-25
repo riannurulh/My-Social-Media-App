@@ -3,8 +3,8 @@ import {setContext} from'@apollo/client/link/context'
 import * as SecureStore from 'expo-secure-store'
 
 const httpLink = createHttpLink({
-  uri: 'http://3.26.67.84', //ip aws dari sini bisa register
-  // uri: 'https://line.vexus.my.id', //ip cloudflare dari sini ga bisa
+  // uri: 'http://3.26.67.84', //ip aws dari sini bisa register
+  uri: 'https://line.patriapras.com', //ip cloudflare dari sini ga bisa
   // uri:'http://localhost:3000'
 })
 
