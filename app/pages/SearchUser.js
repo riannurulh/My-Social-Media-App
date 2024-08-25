@@ -7,17 +7,22 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
-import { LOGIN_PROFILE, SEARCH_USER } from "../query/users"; 
+import { LOGIN_PROFILE, SEARCH_USER } from "../query/users";
 import { FOLLOW } from "../query/follow";
 
 const SearchUser = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  let [searchUsers, { called, loading, data, error }] = useLazyQuery(SEARCH_USER);
-  let [followFn, { loading: loadingFollow, error: errorFollow }] = useMutation(FOLLOW, {
-    refetchQueries: [SEARCH_USER, LOGIN_PROFILE],
-  });
+  let [searchUsers, { called, loading, data, error }] =
+    useLazyQuery(SEARCH_USER);
+  let [followFn, { loading: loadingFollow, error: errorFollow }] = useMutation(
+    FOLLOW,
+    {
+      refetchQueries: [SEARCH_USER, LOGIN_PROFILE],
+    }
+  );
 
   const {
     data: dataLogin,
@@ -41,7 +46,7 @@ const SearchUser = () => {
         style={styles.input}
         placeholder="Search by username or email"
         value={searchTerm}
-        onChangeText={setSearchTerm} 
+        onChangeText={setSearchTerm}
       />
       <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
         <Text style={styles.searchButtonText}>Search</Text>
@@ -51,34 +56,47 @@ const SearchUser = () => {
       {error && <Text style={styles.errorText}>User not found</Text>}
       {called && data && data.userByUsername && (
         <FlatList
-          data={data.userByUsername} 
+          data={data.userByUsername}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <View style={styles.item}>
-              <Text style={styles.itemText}>Name: {item.name}</Text>
-              <Text style={styles.itemText}>Username: {item.username}</Text>
-              <Text style={styles.itemText}>Email: {item.email}</Text>
-              {dataLogin.userLoginProfile.followings.some(
-                (el) => el._id === item._id
-              ) ? (
-                <TouchableOpacity style={styles.followButtonDisabled} disabled={true}>
-                  <Text style={styles.followButtonText}>Followed</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={styles.followButton}
-                  onPress={async () => {
-                    const result = await followFn({
-                      variables: {
-                        followingId: item._id,
-                      },
-                    });
-                    console.log(result, "Follow successful");
-                  }}
-                >
-                  <Text style={styles.followButtonText}>Follow</Text>
-                </TouchableOpacity>
-              )}
+              <Image
+                source={{
+                  uri: "https://randomuser.me/api/portraits/men/1.jpg",
+                }}
+                style={styles.profileImage}
+              />
+              <View>
+                <Text style={styles.itemText}>{item.name}</Text>
+                <Text style={styles.itemText}>@{item.username}</Text>
+                <Text style={styles.itemText}>{item.email}</Text>
+              </View>
+              <View>
+                {dataLogin.userLoginProfile.followings.some(
+                  (el) => el._id === item._id
+                ) ? (
+                  <TouchableOpacity
+                    style={styles.followButtonDisabled}
+                    disabled={true}
+                  >
+                    <Text style={styles.followButtonText}>Followed</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.followButton}
+                    onPress={async () => {
+                      const result = await followFn({
+                        variables: {
+                          followingId: item._id,
+                        },
+                      });
+                      console.log(result, "Follow successful");
+                    }}
+                  >
+                    <Text style={styles.followButtonText}>Follow</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           )}
         />
@@ -91,7 +109,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
+  },
+  profileImage: {
+    width: 55,
+    height: 55,
+    borderRadius: 40,
+    marginBottom: 12,
+    marginVertical:"auto"
   },
   input: {
     height: 40,
@@ -100,10 +125,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
-    backgroundColor: "#F7F7F7", 
+    backgroundColor: "#F7F7F7",
   },
   searchButton: {
-    backgroundColor: "#00C300", 
+    backgroundColor: "#00C300",
     borderRadius: 5,
     paddingVertical: 10,
     alignItems: "center",
@@ -115,10 +140,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   item: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 15,
     marginBottom: 10,
     borderRadius: 10,
-    backgroundColor: "#F9F9F9", 
+    backgroundColor: "#F9F9F9",
     borderColor: "#e0e0e0",
     borderWidth: 1,
     shadowColor: "#000",
@@ -132,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   followButton: {
-    backgroundColor: "#00C300", 
+    backgroundColor: "#00C300",
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -144,7 +171,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   followButtonDisabled: {
-    backgroundColor: "#D3D3D3", 
+    backgroundColor: "#D3D3D3",
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,

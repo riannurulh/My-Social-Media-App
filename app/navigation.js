@@ -124,9 +124,9 @@ function MainTab() {
               await SecureStore.deleteItemAsync("access_token");
               setIsSignedIn(false);
             }}
-            style={{ backgroundColor: 'red', padding: 12 }}
+            // style={{ backgroundColor: 'red', padding: 12 }}
           >
-            <Text style={{ color: 'white' }}>Logout</Text>
+            <Text style={{ color: 'red', marginRight:15 }}>Logout</Text>
           </Pressable>
         )
       }}/>

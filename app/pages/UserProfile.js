@@ -1,25 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Image,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
+  Dimensions,
   ActivityIndicator,
 } from "react-native";
 import { useQuery } from "@apollo/client";
 import { LOGIN_PROFILE } from "../query/users";
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
+
+const initialLayout = { width: Dimensions.get("window").width };
+
+const Followers = ({ followers }) => (
+  <View style={styles.section}>
+    <FlatList
+      data={followers}
+      keyExtractor={(item) => item._id}
+      renderItem={({ item }) => (
+        <View style={styles.listItem}>
+          <Image
+            source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+            style={styles.profileImageFoll}
+          />
+          <Text style={styles.listItemText}>{item.username}</Text>
+        </View>
+      )}
+      ListEmptyComponent={<Text style={styles.noDataText}>No followers</Text>}
+    />
+  </View>
+);
+
+const Followings = ({ followings }) => (
+  <View style={styles.section}>
+    <FlatList
+      data={followings}
+      keyExtractor={(item) => item._id}
+      renderItem={({ item }) => (
+        <View style={styles.listItem}>
+            <Image
+            source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+            style={styles.profileImageFoll}
+          />
+          <Text style={styles.listItemText}>{item.username}</Text>
+        </View>
+      )}
+      ListEmptyComponent={<Text style={styles.noDataText}>No followings</Text>}
+    />
+  </View>
+);
 
 const UserProfile = () => {
   const { data, loading, error } = useQuery(LOGIN_PROFILE, {
-    fetchPolicy: 'network-only' 
+    fetchPolicy: "network-only",
   });
 
-  if (loading) return <ActivityIndicator size="large" color="#00C300" style={styles.loader} />;
+  const [index, setIndex] = useState(0);
+  const [routes,setRoutes] = useState([
+    { key: "followers", title: "Followers" },
+    { key: "followings", title: "Followings" },
+  ]);
+
+  if (loading)
+    return (
+      <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />
+    );
   if (error) return <Text style={styles.error}>Error: {error.message}</Text>;
 
   const { user, followers, followings } = data.userLoginProfile;
+
+  const updatedRoutes = [
+    { key: 'followers', title: `Followers (${followers.length})` },
+    { key: 'followings', title: `Followings (${followings.length})` }
+  ];
+
+  const renderScene = SceneMap({
+    followers: () => <Followers followers={followers} />,
+    followings: () => <Followings followings={followings} />,
+  });
 
   return (
     <View style={styles.container}>
@@ -32,38 +92,20 @@ const UserProfile = () => {
         <Text style={styles.profileUsername}>@{user.username}</Text>
         <Text style={styles.profileEmail}>{user.email}</Text>
       </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Followers : {followers.length}</Text>
-        {followers.length > 0 ? (
-          <FlatList
-            data={followers}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={styles.listItem}>
-                <Text style={styles.listItemText}>{item.username}</Text>
-              </View>
-            )}
+      <TabView
+        navigationState={{ index, routes: updatedRoutes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={initialLayout}
+        renderTabBar={(props) => (
+          <TabBar
+            {...props}
+            indicatorStyle={styles.indicator}
+            style={styles.tabBar}
+            labelStyle={styles.tabLabel}
           />
-        ) : (
-          <Text style={styles.noDataText}>No followers</Text>
         )}
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Followings : {followings.length}</Text>
-        {followings.length > 0 ? (
-          <FlatList
-            data={followings}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={styles.listItem}>
-                <Text style={styles.listItemText}>{item.username}</Text>
-              </View>
-            )}
-          />
-        ) : (
-          <Text style={styles.noDataText}>No followings</Text>
-        )}
-      </View>
+      />
     </View>
   );
 };
@@ -71,72 +113,91 @@ const UserProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
     padding: 16,
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
-    backgroundColor: '#F9F9F9', 
     padding: 16,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: "#FFFFFF",
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginBottom: 12,
   },
+  profileImageFoll: {
+    width: 35,
+    height: 35,
+    borderRadius: 40,
+  },
   profileName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: "500",
+    color: "#333",
   },
   profileUsername: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 8,
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 4,
   },
   profileEmail: {
     fontSize: 14,
-    color: '#555',
+    color: "#666",
   },
   section: {
-    marginBottom: 16,
+    flex: 1,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
     marginBottom: 8,
-    color: '#333',
   },
   listItem: {
+    flexDirection: "row",
+    alignItems:"center",
+    gap:12,
     padding: 12,
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
+    borderRadius: 8,
+    marginVertical: 4,
   },
   listItemText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: 14,
+    color: "#333",
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    backgroundColor: "#F4F4F4",
   },
   error: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#F4F4F4",
   },
   noDataText: {
-    textAlign: 'center',
-    color: '#888',
+    textAlign: "center",
+    color: "#888",
+  },
+  tabBar: {
+    backgroundColor: "#FFFFFF",
+    elevation: 0,
+  },
+  indicator: {
+    backgroundColor: "#00C300",
+  },
+  tabLabel: {
+    fontWeight: "500",
+    color: "#333",
+    // color:"red",
   },
 });
 

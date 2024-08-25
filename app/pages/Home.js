@@ -17,25 +17,39 @@ import { LOGIN_PROFILE } from "../query/users";
 
 export default function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_POST);
-  const [likePostFn, { loading: loadingLike, error: errorLike }] = useMutation(LIKE_POST, {
-    refetchQueries: [GET_POST],
-  });
+  const [likePostFn, { loading: loadingLike, error: errorLike }] = useMutation(
+    LIKE_POST,
+    {
+      refetchQueries: [GET_POST],
+    }
+  );
 
-  const { data: dataLogin, loading: loadingLogin, error: errorLogin } = useQuery(LOGIN_PROFILE);
+  const {
+    data: dataLogin,
+    loading: loadingLogin,
+    error: errorLogin,
+  } = useQuery(LOGIN_PROFILE);
 
   if (loading || loadingLogin) {
     return <Text style={styles.loadingText}>Loading...</Text>;
   }
 
   if (error || errorLike || errorLogin) {
-    return <Text style={styles.errorText}>An error occurred. Please try again later.</Text>;
+    return (
+      <Text style={styles.errorText}>
+        An error occurred. Please try again later.
+      </Text>
+    );
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>LINE VOOM</Text>
-        <Pressable style={styles.createPostButton} onPress={() => navigation.navigate("CreatePost")}>
+        <Pressable
+          style={styles.createPostButton}
+          onPress={() => navigation.navigate("CreatePost")}
+        >
           <Text style={styles.createPostText}>+</Text>
         </Pressable>
       </View>
@@ -48,52 +62,65 @@ export default function HomeScreen({ navigation }) {
           );
 
           return (
-            <Pressable onPress={() => navigation.navigate("Post", { post: item })}>
+            <Pressable
+              onPress={() => navigation.navigate("Post", { post: item })}
+            >
               <View style={styles.postContainer}>
                 <View style={styles.postHeader}>
                   <Image
-                    source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+                    source={{
+                      uri: "https://randomuser.me/api/portraits/men/1.jpg",
+                    }}
                     style={styles.avatar}
                   />
                   <Text style={styles.username}>{item.author.name}</Text>
                 </View>
                 <Text style={styles.postContent}>{item.content}</Text>
-                {item.imgUrl && <Image source={{ uri: item.imgUrl }} style={styles.postImage} />}
+                {item.imgUrl && (
+                  <Image
+                    source={{ uri: item.imgUrl }}
+                    style={styles.postImage}
+                  />
+                )}
                 <View style={styles.postFooter}>
-                  {isLiked?
-                  <TouchableOpacity
-                    style={styles.likeButton}
-                    disabled={true}
-                  >
-                    <Ionicons
-                      name="happy"
-                      size={24}
-                      color="#00C300"
-                    />
-                  </TouchableOpacity>:<TouchableOpacity
-                    style={styles.likeButton}
-                    onPress={async () => {
-                      try {
-                        await likePostFn({ variables: { postId: item._id } });
-                      } catch (error) {
-                        console.error("Failed to like post", error);
-                      }
-                    }}
-                  >
-                    <Ionicons
-                      name="happy-outline"
-                      size={24}
-                      color="#00C300"
-                    />
-                  </TouchableOpacity>}
-                  
+                  {isLiked ? (
+                    <TouchableOpacity style={styles.likeButton} disabled={true}>
+                      <Ionicons name="happy" size={24} color="#00C300" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.likeButton}
+                      onPress={async () => {
+                        try {
+                          await likePostFn({ variables: { postId: item._id } });
+                        } catch (error) {
+                          console.error("Failed to like post", error);
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name="happy-outline"
+                        size={24}
+                        color="#00C300"
+                      />
+                    </TouchableOpacity>
+                  )}
+
                   <Text style={styles.likeCount}>{item.likes.length}</Text>
                   <TouchableOpacity style={styles.commentButton} disabled>
-                    <Ionicons name="chatbubble-outline" size={24} color="gray" />
+                    <Ionicons
+                      name="chatbubble-outline"
+                      size={24}
+                      color="gray"
+                    />
                   </TouchableOpacity>
-                  <Text style={styles.commentCount}>{item.comments.length}</Text>
+                  <Text style={styles.commentCount}>
+                    {item.comments.length}
+                  </Text>
                 </View>
-                <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </Text>
               </View>
             </Pressable>
           );
@@ -106,15 +133,16 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
+    // backgroundColor: "red",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingTop: 5,
     padding: 15,
     backgroundColor: "#FFFFFF",
-    elevation: 4, 
   },
   headerTitle: {
     fontSize: 24,

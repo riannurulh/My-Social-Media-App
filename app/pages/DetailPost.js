@@ -50,10 +50,12 @@ export default function DetailPost({ route }) {
           source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
           style={styles.avatar}
         />
-        <Text style={styles.commentUser}>{item.username}</Text>
+        <View style={styles.colSec}>
+          <Text style={styles.commentUser}>{item.username}</Text>
+          <Text style={styles.commentContent}>{item.content}</Text>
+          <Text style={styles.commentTimestamp}>{item.createdAt}</Text>
+        </View>
       </View>
-      <Text style={styles.commentContent}>{item.content}</Text>
-      <Text style={styles.commentTimestamp}>{item.createdAt}</Text>
     </View>
   );
 
@@ -115,17 +117,18 @@ export default function DetailPost({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffffff",
+    // borderBottomColor:"#00000",
   },
   postContainer: {
     backgroundColor: "#ffffff",
     padding: 15,
-    borderRadius: 10,
-    margin: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    // borderRadius: 10,
+    margin: 10,
+    // shadowColor: "#000",
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 4 },
   },
   postUser: {
     fontWeight: "bold",
@@ -135,6 +138,7 @@ const styles = StyleSheet.create({
   postContent: {
     fontSize: 16,
     marginBottom: 10,
+    marginLeft: 5,
   },
   postImage: {
     width: "100%",
@@ -145,6 +149,7 @@ const styles = StyleSheet.create({
   postLikes: {
     color: "#888",
     fontSize: 14,
+    marginLeft: 5,
   },
   commentsSection: {
     flex: 1,
@@ -153,10 +158,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 15,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    // shadowColor: "#000",
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 4 },
   },
   input: {
     borderWidth: 1,
@@ -172,6 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 20,
   },
   buttonText: {
     color: "#ffffff",
@@ -189,7 +195,7 @@ const styles = StyleSheet.create({
   },
   commentHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "start",
     marginBottom: 5,
   },
   avatar: {
@@ -201,9 +207,11 @@ const styles = StyleSheet.create({
   commentUser: {
     fontWeight: "bold",
     fontSize: 14,
+    marginBottom:10
   },
   commentContent: {
     fontSize: 14,
+    marginBottom:5
   },
   commentTimestamp: {
     marginTop: 5,
@@ -214,8 +222,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "start",
     alignItems: "center",
-    padding: 15,
+    padding: 5,
     backgroundColor: "#FFFFFF",
-    elevation: 4, 
+    elevation: 4,
   },
 });

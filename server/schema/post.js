@@ -57,10 +57,10 @@ const postResolver = {
   Query: {
     posts: async (parent, args, contextValue) => {
       await contextValue.authentication();
-      // const cachePosts = await redis.get("posts:all");
-      // if (cachePosts) {
-      //   return JSON.parse(cachePosts);
-      // }
+      const cachePosts = await redis.get("posts:all");
+      if (cachePosts) {
+        return JSON.parse(cachePosts);
+      }
       const pipeline = [];
 
       pipeline.push({
@@ -85,7 +85,7 @@ const postResolver = {
       // return await Post.findAll();
       let result = await db.collection("Posts").aggregate(pipeline).toArray();
 
-      // await redis.set("posts:all", JSON.stringify(result));
+      await redis.set("posts:all", JSON.stringify(result));
       return result;
     },
     postById: async (parent, args, contextValue) => {
