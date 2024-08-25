@@ -20,3 +20,6 @@ My Social Media App adalah sebuah aplikasi client(mobile)-server. Challenge ini 
 - [ ] Menampilkan Followers dan Following dari setiap user (Reference with $lookup)
 - [ ] Fitur Like Post
 - [ ] Menampilkan total like dari setiap post
+
+link server : https://line.patriapras.com
+client : https://expo.dev/preview/update?message=improve%20design%20evening6&updateRuntimeVersion=1.0.0&createdAt=2024-08-25T10%3A44%3A55.399Z&slug=exp&projectId=f7434138-f75b-4910-ba57-08c8c4af1092&group=7173c3f2-12b8-48a8-98bc-62fc34b2875a
