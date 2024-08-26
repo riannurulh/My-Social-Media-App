@@ -76,6 +76,11 @@ export default function HomeScreen({ navigation }) {
                   <Text style={styles.username}>{item.author.name}</Text>
                 </View>
                 <Text style={styles.postContent}>{item.content}</Text>
+                {item.tags && (
+                  <Text
+                    style={styles.postContent}
+                  >{item.tags.map(el=>{return "#"+el+" "})}</Text>
+                )}
                 {item.imgUrl && (
                   <Image
                     source={{ uri: item.imgUrl }}

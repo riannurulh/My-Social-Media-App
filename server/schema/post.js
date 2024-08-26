@@ -150,10 +150,10 @@ const postResolver = {
         throw new Error("Post not found");
       }
 
-      const allowLike = checkPost.likes.find((el) => el.username === username);
-      if (allowLike) {
-        throw new Error("you are already liked this post");
-      }
+      // const allowLike = checkPost.likes.find((el) => el.username === username);
+      // if (allowLike) {
+      //   throw new Error("you are already liked this post");
+      // }
       let like = await Post.addLike(postId, { username });
       await redis.del("posts:all");
       return like;
