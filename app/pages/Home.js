@@ -20,10 +20,21 @@ export default function HomeScreen({ navigation }) {
   const [likePostFn, { loading: loadingLike, error: errorLike }] = useMutation(
     LIKE_POST,
     {
-      refetchQueries: [GET_POST],
+      update(cache, { data: { addLike } }) {
+        cache.modify({
+          fields: {
+            posts(existingPosts = []) {
+              return existingPosts.map((post) =>
+                post._id === addLike.postId
+                  ? { ...post, likes: [...post.likes, addLike] }
+                  : post
+              );
+            },
+          },
+        });
+      },
     }
   );
-
   const {
     data: dataLogin,
     loading: loadingLogin,
@@ -97,7 +108,37 @@ export default function HomeScreen({ navigation }) {
                       style={styles.likeButton}
                       onPress={async () => {
                         try {
-                          await likePostFn({ variables: { postId: item._id } });
+                          likePostFn({
+                            variables: { postId: item._id },
+                            optimisticResponse: {
+                              addLike: {
+                                __typename: "Like",
+                                username: dataLogin.userLoginProfile.user.username,
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                              },
+                            },
+                            update: (cache, { data: { addLike } }) => {
+                              const existingPosts = cache.readQuery({ query: GET_POST });
+                    
+                              if (existingPosts) {
+                                const updatedPosts = existingPosts.posts.map((post) => {
+                                  if (post._id === item._id) {
+                                    return {
+                                      ...post,
+                                      likes: [...post.likes, addLike], // Tambahkan like baru ke array likes
+                                    };
+                                  }
+                                  return post;
+                                });
+                    
+                                cache.writeQuery({
+                                  query: GET_POST,
+                                  data: { posts: updatedPosts },
+                                });
+                              }
+                            },
+                          });
                         } catch (error) {
                           console.error("Failed to like post", error);
                         }

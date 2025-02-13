@@ -21,6 +21,35 @@ const SearchUser = () => {
     FOLLOW,
     {
       refetchQueries: [SEARCH_USER, LOGIN_PROFILE],
+      update: (cache, { data: { follow } }) => {
+        cache.modify({
+          fields: {
+            userLoginProfile(existingLoginProfile = {}) {
+              return {
+                ...existingLoginProfile,
+                userLoginProfile: {
+                  ...existingLoginProfile.userLoginProfile,
+                  user: {
+                    ...existingLoginProfile.userLoginProfile.user,
+                    followings: [
+                      ...existingLoginProfile.userLoginProfile.user.followings,
+                      follow.followingId,
+                    ],
+                  },
+                },
+              };
+            },
+            userByUsername(existingSearchUser = {}) {
+              return {
+                ...existingSearchUser,
+                userByUsername: existingSearchUser.userByUsername.map((user) => {
+                  return user;
+                }),
+              };
+            },
+          }
+        });
+      },
     }
   );
 
@@ -72,9 +101,10 @@ const SearchUser = () => {
                 <Text style={styles.itemText}>{item.email}</Text>
               </View>
               <View style={styles.clicked}>
-                {dataLogin.userLoginProfile.followings.some(
+                {isFollowed = dataLogin.userLoginProfile.followings.some(
                   (el) => el._id === item._id
-                ) ? (
+                )? true : false}
+                {isFollowed ? (
                   <TouchableOpacity
                     style={styles.followButtonDisabled}
                     disabled={true}
@@ -85,12 +115,51 @@ const SearchUser = () => {
                   <TouchableOpacity
                     style={styles.followButton}
                     onPress={async () => {
-                      const result = await followFn({
-                        variables: {
-                          followingId: item._id,
-                        },
-                      });
-                      console.log(result, "Follow successful");
+                      try {
+                        await followFn({
+                          variables: {
+                            followingId: item._id,
+                          },
+                          optimisticResponse: {
+                            follow: {
+                              __typename: "Follow",
+                              _id: Math.random().toString(),
+                              followerId: dataLogin.userLoginProfile.user._id,
+                              followingId: item._id,
+                              createdAt: new Date().toISOString(),
+                              updatedAt: new Date().toISOString(),
+                            },
+                          },
+                          update: (cache, { data: { follow } }) => {
+                            const existingLoginProfile = cache.readQuery({ query: LOGIN_PROFILE });
+
+                            if (existingLoginProfile) {
+                              const updatedFollowings = [
+                                ...existingLoginProfile.userLoginProfile.followings,
+                                {
+                                  __typename: "User",
+                                  _id: follow.followingId,
+                                  name: item.name,
+                                  username: item.username,
+                                  email: item.email,
+                                },
+                              ];
+
+                              cache.writeQuery({
+                                query: LOGIN_PROFILE,
+                                data: {
+                                  userLoginProfile: {
+                                    ...existingLoginProfile.userLoginProfile,
+                                    followings: updatedFollowings,
+                                  },
+                                },
+                              });
+                            }
+                          },
+                        });
+                      } catch (err) {
+                        console.error("Follow error:", err);
+                      }
                     }}
                   >
                     <Text style={styles.followButtonText}>Follow</Text>

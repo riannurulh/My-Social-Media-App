@@ -106,7 +106,7 @@ export default function DetailPost({ route }) {
         <FlatList
           data={comments}
           renderItem={renderComment}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item, index) => item._id ? item._id.toString() : index.toString()}
           contentContainerStyle={styles.commentList}
         />
       </View>
